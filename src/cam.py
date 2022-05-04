@@ -63,7 +63,7 @@ def threshold(x):
 	the corresponding 1's and -1's >0 or <0. 
 	'''
 	x_new = np.zeros_like(x)
-	x_new[x > 0] =  1
+	x_new[x >= 0] =  1
 	x_new[x < 0] = -1
 	return x_new
 
@@ -131,16 +131,43 @@ def randomize(x,p=0.4):
 	'''
 	"Turn off" (set to -1) a fraction p of nodes in the 1-d array x.  
 	'''
-	idxs        = np.random.randint(len(x),size=int(len(x)*p))
+	# idxs        = np.random.randint(len(x),size=int(len(x)*p))
+	idxs        = np.random.permutation(len(x))[:int(len(x)*p)]
 	x_new       = copy.deepcopy(x)
 	x_new[idxs] = -1
-	print("Original vector:  ", end=' ')
-	print(x)
-	print("Randomized vector:",end=' ')
-	print(x_new)
-	print("Hamming Distance: ", hamming_distance(x,x_new))
 
+	if len(x) < 17:
+		print("Original vector:  ", end=' ')
+		print(x)
+		print("Randomized vector:",end=' ')
+		print(x_new)
+	else:
+		print("Original vector:  ",end=' ')
+		print(x[0:10],"\b ", " ... ",x[-3:])
+		print("Randomized vector:",end=' ')
+		print(x_new[0:10],"\b ", " ... ",x_new[-3:])
+	print("Hamming Distance: ", hamming_distance(x,x_new),end="/")
+	print("Euclidean Distance: ",euclid_distance(x,x_new))
 	return x_new
+
+def random_vector(p=0.5,size=5):
+	'''
+	Return a completely random vector of 1's and -1's.
+	'''
+	x = np.random.choice(2,size,p=p)
+	x[x < 1] = -1
+	return x
+
+def hinton_example():
+	x = np.array([1,0,1,0,0])
+	W = [[ 0,-4, 3, 2, 0],
+		 [-4, 0, 0, 3, 3],
+		 [ 3, 0, 0,-1, 0],
+		 [ 2, 3,-1, 0,-1],
+		 [ 0, 3, 0,-1, 0]]
+	W = np.array(W)
+	b = copy.deepcopy(x)
+	return x,W,b
 
 ################################################################################
 # MAIN
@@ -159,7 +186,6 @@ if __name__ == "__main__":
 	x    = S[1]
 	test = randomize(x)
 	plot_small_letters([x,test],"../img/test_letters.png")
-
 	result = iterate(test)
 	plot_small_letters([test,result],"../img/test_letters_result.png")
 
