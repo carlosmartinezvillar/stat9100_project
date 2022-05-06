@@ -12,27 +12,33 @@ import numpy as np
 import matplotlib.pyplot as plt
 import copy
 from imageio import imread
+import networkx as nx
 
 #SEEDs
-np.random.seed(123456789)     #numpy seed
-random.seed(123456789) #let's do lib random to REALLY make sure seed's fixed
+# np.random.seed(123456789)     #numpy seed
+# random.seed(123456789) #let's do lib random to REALLY make sure seed's fixed
 
-
+################################################################################
 # FUNCTIONS
+################################################################################
 def plot_graph(G):
 	pass
+
 
 def hamming_distance(a,b):
 	return (a != b).sum()
 
+
 def euclid_distance(a,b):
 	return np.sum((a-b)**2)
+
 
 def states_distance(memories,state):
 	print("\nNetwork state vs memory states")
 	for i,m in enumerate(memories):
 		d = hamming_distance(m,state)
 		print("Hamming distance to memory %i: %i" % (i,d))
+
 
 def compute_weights(S):
 	# M = S.shape[0]          #nr of states
@@ -56,12 +62,14 @@ def delta_E(x,W,b):
 	E_i = x  @ W - b
 	return E_i
 
+
 def global_energy(x,W,b):
 	'''
 	Return the calculated energy for a state (row) vector x, given W and b.
 	'''
 	E = -0.5*(x@W)@x.T - b@x.T
 	return E
+
 
 def sgn(x):
 	'''
@@ -73,12 +81,14 @@ def sgn(x):
 	x[x < 0] = -1
 	return x
 
+
 def binary_decision(x,W,b):
 	# x_new = np.zeros_like(x)
 	x_new = x @ W - b
 	x_new[x_new < 0] = -1
 	x_new[x_new >= 0] = 1
 	return x_new.astype(int)
+
 
 def iterate(probe,orig,n_iter=10):
 	x = copy.deepcopy(probe)
@@ -114,6 +124,7 @@ def letters_dataset(): # VERY SMALL RESOLUTION LETTERS
 		X[i,:] = sgn(np.array(img.flatten() - 0.5)) #[0,1] to [-1,1]
 	return X
 
+
 def plot_small_letters(letters,path,labels=None):
 	plt.figure(figsize=(10,4))
 	n = len(letters)
@@ -127,14 +138,19 @@ def plot_small_letters(letters,path,labels=None):
 		plt.axis('off')
 		plt.savefig(path)
 
+
 def mnist_dataset(n_samples=3):
 	path = "../img/mnist_10.csv"
 	digits = np.loadtxt(path,delimiter=",")
 	digits = digits[:,1:] #1st number is the label, remove it
+	digits = digits/255
+	digits[digits > 0] =  1
+	digits[digits < 1] = -1
 	if n_samples > 10:
 		print("File only contains 10 samples!")
 		return digits
 	return digits[0:n_samples]
+
 
 def plot_mnist(digits,path,labels=None):
 	# path = "../img/digits.png"
@@ -159,6 +175,7 @@ def orthogonal_dataset():
 	S = np.array(ortho_states) #numpy array instead of python array
 	return S
 
+
 def cover(x,c=0.5):
 	'''
 	Takes in single state vector 'x' and returns half it covered.
@@ -166,46 +183,38 @@ def cover(x,c=0.5):
 	x_new = np.copy(x)
 	x_new[int(len(x)*c):] = -1
 
+	#print details
 	print()
-	if len(x) < 17:
-		print("Original vector:  ", end=' ')
-		print(x)
-		print("Randomized vector:",end=' ')
-		print(x_new)
-	else:
-		print("Original vector:  ",end=' ')
-		print(x[0:10],"\b ", " ... ",x[-3:])
-		print("Randomized vector:",end=' ')
-		print(x_new[0:10],"\b ", " ... ",x_new[-3:])
+	print("Original vector:  ", end=' ')
+	print_state(x)
+	print("Randomized vector:",end=' ')
+	print_state(x_new)
 	print("Hamming Distance:   %i" % hamming_distance(x,x_new))
 	print("Euclidean Distance: %.3f" % euclid_distance(x,x_new),end='\n\n')
 
 	return x_new
 
+
 def randomize(x,p=0.4):
 	'''
 	"Turn off" (set to -1) a fraction p of nodes in the 1-d array x.  
 	'''
-	# idxs        = np.random.randint(len(x),size=int(len(x)*p))
+
+	#shuffle the indexes using a uniform dist.
 	idxs        = np.random.permutation(len(x))[:int(len(x)*p)]
 	x_noise       = copy.deepcopy(x)
 	x_noise[idxs] = -1
 
+	#print a bunch of details
 	print()
-	if len(x) < 17:
-		print("Original vector:  ", end=' ')
-		print_state(x)
-		print("Randomized vector:",end=' ')
-		print_state(x_noise)
-	else:
-		print("Original vector:  ",end=' ')
-		print_state(x)
-		print("Randomized vector:",end=' ')
-		print_state(x_noise)
+	print("Original vector:  ", end=' ')
+	print_state(x)
+	print("Randomized vector:",end=' ')
+	print_state(x_noise)
 	print("Hamming Distance:   %i" % hamming_distance(x,x_noise))
 	print("Euclidean Distance: %.3f" % euclid_distance(x,x_noise),end='\n\n')
-
 	return x_noise
+
 
 def random_vector(p=0.5,size=5):
 	'''
@@ -214,6 +223,7 @@ def random_vector(p=0.5,size=5):
 	x = np.random.choice(2,size,p=p)
 	x[x < 1] = -1
 	return x
+
 
 def hinton_example():
 	x = np.array([1,0,1,0,0])
@@ -226,6 +236,7 @@ def hinton_example():
 	b = copy.deepcopy(x)
 	return x,W,b
 
+
 def print_state(x_array):
 	if len(x_array) > 17:
 		for j in x_array[0:10]:
@@ -233,8 +244,25 @@ def print_state(x_array):
 		print(" ... %2i %2i %2i" % (x_array[-3],x_array[-2],x_array[-1]))
 	else:
 		for j in x_array:
-			print("%2i " % j)
+			print("%2i" % j,end=' ')
+		print("")
 
+
+def plot_graph(V,E):
+	pass
+
+	G = nx.Graph()
+	for i,v in enumerate(V):
+		if v > 0:
+			c = 'blue'
+		else:
+			c = 'red'
+		G.add_node("X"+str(i),color=c)
+
+	for i in range(E.shape[0]):
+		for j in range(E.shape[1]):
+			if i < j:
+				G.add_edge(i,j,weight=E[i,j])
 
 ################################################################################
 # MAIN
@@ -242,13 +270,13 @@ def print_state(x_array):
 if __name__ == "__main__":
 
 	#SIMPLE VECTORS
-	# S    = orthogonal_dataset()
-	# W,b  = compute_weights(S)
-	# orig = S[1]
-	# test = randomize(orig,p=0.4)
-	# # test = cover(orig)
-	# final_state = iterate(test,orig,n_iter=10)
-	# states_distance(S,final_state)
+	S    = orthogonal_dataset()
+	W,b  = compute_weights(S)
+	orig = S[0]
+	test = randomize(orig,p=0.4)
+	# test = cover(orig)
+	final_state = iterate(test,orig,n_iter=10)
+	states_distance(S,final_state)
 
 	#LETTERS
 	# S    = letters_dataset()
@@ -262,15 +290,19 @@ if __name__ == "__main__":
 	# plot_small_letters([orig,test,final_state],"../img/letters_result.png",labels)
 
 	#MNIST
-	S = mnist_dataset(n_samples=5)
-	# plot_mnist(S,"../img/digits.png")
-	W,b  = compute_weights(S)
-	orig = S[3]
-	p = 0.5
+	# S = mnist_dataset(n_samples=4)
+	# # plot_mnist(S,"../img/digits.png")
+	# W,b  = compute_weights(S)
+	# orig = S[0]
+	# p = 0.5
 	# test = randomize(orig,p=p)
-	test = cover(orig,c=p)
-	final_state = iterate(test,orig,n_iter=30)
-	labels = ["Original","Randomized p=%.1f" % p,"Recovered"]
-	plot_mnist([orig,test,final_state],"../img/digits_result.png",labels)
+	# # test = cover(orig,c=p)
+	# final_state = iterate(test,orig,n_iter=30)
+	# labels = ["Original","Randomized p=%.1f" % p,"Recovered"]
+	# labels[-2] += "\nH: %i" % hamming_distance(test,orig)
+	# labels[-2] += ", E: %i" % global_energy(test,W,b)
+	# labels[-1] += "\nH: %i" % hamming_distance(final_state,orig)
+	# labels[-1] += ", E: %i" % global_energy(final_state,W,b)
+	# plot_mnist([orig,test,final_state],"../img/digits_result_good_random.png",labels)
 
 
