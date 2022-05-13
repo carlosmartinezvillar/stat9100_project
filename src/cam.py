@@ -41,7 +41,7 @@ def states_distance(memories,state):
 
 
 def compute_weights(S):
-	# M = S.shape[0]          #nr of states
+	# M = S.shape[0]          #nr of memories
 	# W = np.zeros((N,N))     #empty NxN matrix	
 	# for s in S:             #for-each state
 	# 	W += np.outer(s,s)    #outer product
@@ -49,7 +49,7 @@ def compute_weights(S):
 	# W -= np.eye(N)          #subtract identity
 	#------------------------------------------------- alternatively...
 	M = S.shape[0]            #nr of memories
-	N = S.shape[1]            #nr of neurons
+	N = S.shape[1]            #nr of neurons/nodes in gr  aph
 	b = np.sum(S,axis=0) / M  #bias is avg node activity throughout memories
 	W = (S.T @ S) / M - np.eye(N)	
 	return W,b
