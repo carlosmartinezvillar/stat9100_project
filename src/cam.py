@@ -49,7 +49,7 @@ def compute_weights(S):
 	# W -= np.eye(N)          #subtract identity
 	#------------------------------------------------- alternatively...
 	M = S.shape[0]            #nr of memories
-	N = S.shape[1]            #nr of neurons/nodes in gr  aph
+	N = S.shape[1]            #nr of neurons/nodes in graph
 	b = np.sum(S,axis=0) / M  #bias is avg node activity throughout memories
 	W = (S.T @ S) / M - np.eye(N)	
 	return W,b
@@ -259,10 +259,10 @@ def plot_graph(V,E):
 			c = 'red'
 		G.add_node("X"+str(i),color=c)
 
-	for i in range(E.shape[0]):
-		for j in range(E.shape[1]):
-			if i < j:
-				G.add_edge(i,j,weight=E[i,j])
+for i in range(E.shape[0]):
+	for j in range(E.shape[1]):
+		if i < j:
+			G.add_edge(i,j,weight=E[i,j])
 
 ################################################################################
 # MAIN
